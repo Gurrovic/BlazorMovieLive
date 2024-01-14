@@ -1,0 +1,6 @@
+@BlazorMovieLive.Authorization_HostAddress = http://localhost:5008
+
+GET {{BlazorMovieLive.Authorization_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

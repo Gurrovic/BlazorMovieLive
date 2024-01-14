@@ -1,0 +1,67 @@
+﻿@page "/settings"
+@inject IAuthService AuthService
+@inject NavigationManager NavigationManager
+
+<h3>Account Settings</h3>
+
+@if (!string.IsNullOrEmpty(updateMessage))
+{
+    <div class="alert alert-success">
+        @updateMessage
+    </div>
+}
+
+@if (userSettings != null)
+{
+    <EditForm Model="@userSettings" OnValidSubmit="UpdateUserSettings">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        <div class="form-group">
+            <label for="firstName">First Name</label>
+            <InputText Id="firstName" class="form-control" @bind-Value="@userSettings.FirstName" />
+        </div>
+        <div class="form-group">
+            <label for="lastName">Last Name</label>
+            <InputText Id="lastName" class="form-control" @bind-Value="@userSettings.LastName" />
+        </div>
+
+        <button type="submit" class="btn btn-primary">Save Changes</button>
+    </EditForm>
+}
+else
+{
+    <p>Loading...</p>
+}
+
+@code {
+    private UserSettingsModel? userSettings;
+    private string updateMessage = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        await AuthService.InitializeAsync();
+        userSettings = await AuthService.GetUserSettings();
+    }
+
+    private async Task UpdateUserSettings()
+    {
+        bool updateSuccessful = await AuthService.UpdateUserSettings(userSettings);
+
+        if (updateSuccessful)
+        {
+            updateMessage = "Changes have been implemented";
+            StateHasChanged(); // Update UI to show the message
+            await Task.Delay(3000); // Wait for 3 seconds
+            updateMessage = ""; // Clear the message
+            StateHasChanged(); // Update UI again
+            NavigationManager.NavigateTo("/"); // Navigate to the root if successful
+        }
+        else
+        {
+            updateMessage = "Failed to update settings";
+            StateHasChanged(); // Update UI to show the error message
+        }
+    }
+
+}

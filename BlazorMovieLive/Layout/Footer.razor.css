@@ -1,0 +1,17 @@
+﻿.footerStyle {
+    background-color: darkblue;
+    color: white;
+}
+
+.footerStyle a{
+    color: lightblue;
+}
+
+.footerStyle a:hover{
+    color: yellow;
+}
+
+.footerStyle .bi{
+    font-size: 1.5rem;
+    padding-inline-start: 0.5rem;
+}

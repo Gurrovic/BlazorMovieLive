@@ -1,0 +1,49 @@
+﻿@inject IJSRuntime JS
+
+<div class="d-flex align-items-center justify-content-center gap-3">
+    <button class="btn btn-primary rounded-pill" disabled="@(CurrentPage <= 1)" @onclick="PreviousPage">
+        <i class="bi bi-arrow-left"></i>
+    </button>
+
+    <span>Page @CurrentPage of @TotalPages</span>
+
+    <button class="btn btn-primary rounded-pill" disabled="@(CurrentPage >= TotalPages)" @onclick="NextPage">
+        <i class="bi bi-arrow-right"></i>
+    </button>
+</div>
+
+@code {
+    [Parameter]
+    [EditorRequired]
+    public int CurrentPage { get; set; }
+
+    [Parameter]
+    [EditorRequired]
+    public int TotalPages { get; set; }
+
+    [Parameter]
+    public EventCallback<int> OnPageChanged { get; set; }
+
+    private bool IsLoading; 
+
+    private async Task ChangePage(int newPage)
+    {
+        try
+        {
+            IsLoading = true;           
+            CurrentPage = newPage;
+            await OnPageChanged.InvokeAsync(CurrentPage);            
+        }
+        catch (Exception)
+        {
+            Console.WriteLine("SOMETHING DID NOT WORK");
+        }
+        finally
+        {
+            IsLoading = false;
+        }
+    }
+
+    private Task NextPage() => ChangePage(CurrentPage + 1);
+    private Task PreviousPage() => ChangePage(CurrentPage - 1);
+}

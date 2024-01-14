@@ -1,0 +1,75 @@
+﻿@page "/"
+@inject TMDBCLient TMDB
+@inject NavigationManager Nav
+
+<PageTitle>Blazor Movie: Popular Movies</PageTitle>
+
+<div class="container-xxl py-3">
+    <div>
+        <h1 class="display-6">
+            <span class="text-danger">
+                <i class="bi bi-fire"></i>
+            </span>
+            Popular Movies
+        </h1>
+    </div>
+    <div class="d-flex flex-column flex-md-row justify-content-between my-3">
+
+        <div class="row row-cols-2 row-cols-lg-4 row-cols-xl-5 g-3 justify-content-center justify-content-md-start">
+            @if(movies != null)
+            {                
+                @foreach(PopularMovie movie in movies.Results)
+                {
+                    <div class="col">
+                        <MovieCard Movie="movie"/>
+                    </div>
+                }
+            }
+            else
+            {
+                for (int i = 0; i < 10; i++)
+                {
+                    <div class="col">
+                        <MovieCard/>
+                    </div>
+                }
+            }
+        </div>
+    
+    </div>
+
+    @if(movies?.TotalPages > 1)
+    {
+        <div class="my-3">
+            <Paginator 
+                CurrentPage="movies.Page"
+                TotalPages="movies.TotalPages > 500 ? 500 : movies.TotalPages"
+                OnPageChanged="GetPage"
+            />
+        </div>
+    }
+    
+</div>
+
+@code {
+    private PopularMoviePagedResponse? movies;
+
+    [SupplyParameterFromQuery]
+    public int Page { get; set; } = 1;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (Page < 1) Page = 1;
+        if (Page > 500) Page = 500;
+
+        // await GetPage(Page);
+
+        movies = await TMDB.GetPopularMoviesAsync(Page);
+    }
+
+    private void GetPage(int pageNum)
+    {
+        string url = Nav.GetUriWithQueryParameter("page", pageNum);
+        Nav.NavigateTo(url);
+    }
+}
