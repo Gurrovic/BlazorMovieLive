@@ -1,0 +1,38 @@
+﻿@using BlazorMovieLive.Client.Models
+
+<div class="row row-cols-2 row-cols-lg-4 row-cols-xl-5 g-3 justify-content-center justify-content-md-start">
+    @if (Movies != null)
+    {
+        @foreach (var movie in Movies)
+        {
+            <div class="col">
+                <MovieCard Movie="movie" />
+            </div>
+        }
+    }
+    else
+    {
+        for (int i = 0; i < 10; i++)
+        {
+            <div class="col">
+                <MovieCard />
+            </div>
+        }
+    }
+</div>
+
+@if (TotalPages > 1)
+{
+    <div class="my-3">
+        <Paginator CurrentPage="CurrentPage"
+                   TotalPages="TotalPages > 500 ? 500 : TotalPages"
+                   OnPageChanged="OnPageChanged" />
+    </div>
+}
+
+@code {
+    [Parameter] public IEnumerable<PopularMovie> Movies { get; set; }
+    [Parameter] public int CurrentPage { get; set; }
+    [Parameter] public int TotalPages { get; set; }
+    [Parameter] public EventCallback<int> OnPageChanged { get; set; }
+}

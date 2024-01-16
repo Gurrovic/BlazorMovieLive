@@ -39,8 +39,7 @@ else
     private string updateMessage = "";
 
     protected override async Task OnInitializedAsync()
-    {
-        await AuthService.InitializeAsync();
+    {        
         userSettings = await AuthService.GetUserSettings();
     }
 

@@ -46,25 +46,19 @@ namespace BlazorMovieLive.Authorization.Controllers
         [HttpGet("getuserinfo")]
         public async Task<ActionResult<UserSettingsModel>> GetUserInfo()
         {
-            // Check if User is null
-            if (User == null)
+            var userId = _userManager.GetUserId(User);
+            if (string.IsNullOrEmpty(userId))
             {
-                Console.WriteLine("User object is null");
+                Console.WriteLine("User ID is null or empty");
                 return Unauthorized();
             }
 
-            var userEmail = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Name)?.Value;
-            var user = await _userManager.FindByEmailAsync(userEmail);
+            var user = await _userManager.FindByIdAsync(userId);
 
             if (user == null)
             {
                 return NotFound();
-            }
-
-            if (user != null)
-            {
-                Console.WriteLine($"{user.UserName} just logged in.");
-            }
+            }     
 
             var model = new UserSettingsModel
             {

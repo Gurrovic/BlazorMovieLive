@@ -1,8 +1,8 @@
-﻿@page "/"
+﻿@page "/toprated"
 @inject TMDBCLient TMDB
 @inject NavigationManager Nav
 
-<PageTitle>Blazor Movie: Popular Movies</PageTitle>
+<PageTitle>Blazor Movie: Top Rated Movies</PageTitle>
 
 <div class="container-xxl py-3">
     <div>
@@ -10,10 +10,9 @@
             <span class="text-danger">
                 <i class="bi bi-fire"></i>
             </span>
-            Popular Movies
+            Top Rated Movies
         </h1>
     </div>
-
     <MovieListComponent Movies="movies?.Results"
                         CurrentPage="movies?.Page ?? 1"
                         TotalPages="movies?.TotalPages ?? 1"
@@ -29,9 +28,9 @@
     protected override async Task OnParametersSetAsync()
     {
         if (Page < 1) Page = 1;
-        if (Page > 500) Page = 500;
+        if (Page > 500) Page = 500; 
 
-        var category = "popular";
+        var category = "top_rated";
         movies = await TMDB.GetMoviesAsync(category, Page);
     }
 

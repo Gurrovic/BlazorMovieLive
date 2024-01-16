@@ -16,12 +16,14 @@ builder.RootComponents.Add<HeadOutlet>("head::after");
 builder.Services.AddBlazoredLocalStorage();
 builder.Services.AddAuthorizationCore();
 builder.Services.AddScoped<AuthenticationStateProvider, CustomAuthenticationStateProvider>();
+builder.Services.AddScoped<AuthenticationDelegatingHandler>();
 
 builder.Services.AddHttpClient("InternalApi", client =>
 {    
     client.BaseAddress = new Uri("https://localhost:7213/");
     client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-});
+}).AddHttpMessageHandler<AuthenticationDelegatingHandler>();
+
 
 builder.Services.AddHttpClient("ExternalApi", client =>
 {
@@ -29,10 +31,7 @@ builder.Services.AddHttpClient("ExternalApi", client =>
     client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));    
 });
 
-//builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
-
 builder.Services.AddScoped<TMDBCLient>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 
 await builder.Build().RunAsync();
-

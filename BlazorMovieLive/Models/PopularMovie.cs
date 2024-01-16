@@ -46,6 +46,4 @@ namespace BlazorMovieLive.Client.Models
         [JsonPropertyName("vote_count")]
         public int VoteCount { get; set; }
     }
-
-
 }

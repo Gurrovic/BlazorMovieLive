@@ -144,6 +144,4 @@ namespace BlazorMovieLive.Client.Models
         [JsonPropertyName("backdrop_path")]
         public string? BackdropPath { get; set; }
     }
-
-
 }

@@ -1,5 +1,6 @@
 ﻿@page "/movie/{id:int}"
 @inject TMDBCLient TMDB
+@inject IAuthService AuthService
 
 @if (movieDetails is null)
 {
@@ -30,6 +31,12 @@ else
                         <span class="badge me-2 text-bg-success">@rating% <i class="bi bi-stars"></i></span>
                         <div class="movie-links">
                             <div class="d-flex justify-content-center justify-content-md-end p-3">
+
+                                <div class="text-center px-2">
+                                    <button class="btn btn-outline-success rounded-pill" @onclick="AddToFavorites">
+                                        Add to favorites
+                                    </button>
+                                </div>
 
                                 @if (!string.IsNullOrEmpty(movieDetails.Homepage))
                                 {
@@ -94,5 +101,27 @@ else
     protected override async Task OnInitializedAsync()
     {
         movieDetails = await TMDB.GetMovieDetailsAsync(Id);        
+    }
+
+    private async Task AddToFavorites()
+    {        
+        if (movieDetails != null)
+        {
+            var favoriteMovieDto = new FavoriteMovieDto
+                {
+                    MovieId = movieDetails.Id,
+                    MovieTitle = movieDetails.Title
+                };
+
+            var success = await AuthService.AddToFavorites(favoriteMovieDto);
+            if (success)
+            {
+                // Handle success (e.g., show a confirmation message)
+            }
+            else
+            {
+                // Handle failure (e.g., show an error message)
+            }
+        }
     }
 }

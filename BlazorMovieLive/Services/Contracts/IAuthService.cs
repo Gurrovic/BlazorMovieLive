@@ -10,7 +10,7 @@ namespace BlazorMovieLive.Client.Services.Contracts
         Task Logout();
         Task<UserSettingsModel> GetUserSettings();
         Task<bool> UpdateUserSettings(UserSettingsModel settingsModel);
-
-        Task InitializeAsync();
+        Task<bool> AddToFavorites(FavoriteMovieDto favoriteMovieDto);
+        Task<List<int>> GetFavoriteMovieIdsAsync();
     }
 }

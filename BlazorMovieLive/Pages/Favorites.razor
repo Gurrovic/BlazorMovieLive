@@ -1,0 +1,52 @@
+﻿@page "/favorites"
+@inject TMDBCLient TMDB
+@inject NavigationManager Nav
+@inject IAuthService AuthService
+
+<PageTitle>Blazor Movie: Favorite Movies</PageTitle>
+
+<div class="container-xxl py-3">
+    <div>
+        <h1 class="display-6">
+            <span class="text-danger">
+                <i class="bi bi-fire"></i>
+            </span>
+            Favorite Movies
+        </h1>
+    </div>
+
+    <MovieListComponent Movies="favoriteMovies?.Results"
+                        CurrentPage="favoriteMovies?.Page ?? 1"
+                        TotalPages="favoriteMovies?.TotalPages ?? 1"
+                        OnPageChanged="GetPage"/>
+</div>
+
+
+@code {
+    private PopularMoviePagedResponse? favoriteMovies;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await FetchFavoriteMovies();
+    }
+
+    private async Task FetchFavoriteMovies()
+    {
+        // Step 1: Fetch favorite movie IDs using AuthService
+        var favoriteMovieIds = await AuthService.GetFavoriteMovieIdsAsync();
+        if (favoriteMovieIds == null || !favoriteMovieIds.Any())
+        {
+            // Handle the case where there are no favorite movies
+            // favoriteMovies = new List<Movie>();
+            return;
+        }        
+
+        favoriteMovies = await TMDB.GetMoviesByIdsAsync(favoriteMovieIds);
+    }
+
+    private void GetPage(int pageNum)
+    {
+        string url = Nav.GetUriWithQueryParameter("page", pageNum);
+        Nav.NavigateTo(url);
+    }
+}

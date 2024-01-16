@@ -24,16 +24,7 @@ namespace BlazorMovieLive.Client.Services
             _httpClient = httpClientFactory.CreateClient("InternalApi");
             _authenticationStateProvider = authenticationStateProvider;
             _localStorage = localStorage;            
-        }
-
-        public async Task InitializeAsync()
-        {
-            var savedToken = await _localStorage.GetItemAsync<string>("authToken");
-            if (!string.IsNullOrWhiteSpace(savedToken))
-            {
-                _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("bearer", savedToken);
-            }
-        }
+        }       
 
         public async Task<RegisterResult> Register(RegisterModel registerModel)
         {
@@ -82,6 +73,27 @@ namespace BlazorMovieLive.Client.Services
         {
             var result = await _httpClient.PostAsJsonAsync("api/accounts/updateuserinfo", settingsModel);
             return result.IsSuccessStatusCode;
+        }
+
+        public async Task<bool> AddToFavorites(FavoriteMovieDto favoriteMovieDto)
+        {           
+            var response = await _httpClient.PostAsJsonAsync("api/favorites", favoriteMovieDto);
+            return response.IsSuccessStatusCode;
+        }
+
+        public async Task<List<int>> GetFavoriteMovieIdsAsync()
+        {
+            try
+            {
+                var response = await _httpClient.GetFromJsonAsync<List<int>>("api/favorites");
+                return response ?? new List<int>(); // Return an empty list if the response is null
+            }
+            catch (Exception ex)
+            {
+                // Log the exception and handle it as needed
+                // For simplicity, returning an empty list here
+                return new List<int>();
+            }
         }
     }
 }

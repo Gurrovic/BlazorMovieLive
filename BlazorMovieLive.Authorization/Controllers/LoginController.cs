@@ -16,27 +16,43 @@ namespace BlazorMovieLive.Authorization.Controllers
     {
         private readonly IConfiguration _configuration;
         private readonly SignInManager<ApplicationUser> _signInManager;
+        private readonly UserManager<ApplicationUser> _userManager;
 
         public LoginController(IConfiguration configuration,
-                               SignInManager<ApplicationUser> signInManager)
+                               SignInManager<ApplicationUser> signInManager,
+                               UserManager<ApplicationUser> userManager)
         {
             _configuration = configuration;
             _signInManager = signInManager;
+            _userManager = userManager;
         }
 
         [HttpPost]
         public async Task<IActionResult> Login([FromBody] LoginModel login)
         {
-            var result = await _signInManager.PasswordSignInAsync(login.Email!, login.Password!, false, false);
-
-            if (!result.Succeeded) return BadRequest(new LoginResult { Successful = false, Error = "Username and password are invalid." });
-
-            var claims = new[]
+            // Find the user by email
+            var user = await _userManager.FindByEmailAsync(login.Email);
+            if (user == null)
             {
-            new Claim(ClaimTypes.Name, login.Email!)
-        };
+                return BadRequest(new LoginResult { Successful = false, Error = "Username and password are invalid." });
+            }
 
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JwtSecurityKey"]!));
+            // Attempt to sign in the user
+            var result = await _signInManager.PasswordSignInAsync(login.Email, login.Password, false, false);
+            if (!result.Succeeded)
+            {
+                return BadRequest(new LoginResult { Successful = false, Error = "Username and password are invalid." });
+            }
+
+            // Create a list of claims including the user's ID
+            var claims = new List<Claim>
+            {
+                new Claim(ClaimTypes.Name, login.Email),
+                new Claim(ClaimTypes.NameIdentifier, user.Id) // Add the user's ID as a claim
+            };
+
+            // Generate JWT token
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JwtSecurityKey"]));
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
             var expiry = DateTime.Now.AddDays(Convert.ToInt32(_configuration["JwtExpiryInDays"]));
 
@@ -48,25 +64,7 @@ namespace BlazorMovieLive.Authorization.Controllers
                 signingCredentials: creds
             );
 
-            var writtenToken = new JwtSecurityTokenHandler().WriteToken(token);
-            InspectToken(writtenToken);
-
             return Ok(new LoginResult { Successful = true, Token = new JwtSecurityTokenHandler().WriteToken(token) });
-        }
-
-        private void InspectToken(string tokenString)
-        {
-            var handler = new JwtSecurityTokenHandler();
-            var jwtToken = handler.ReadToken(tokenString) as JwtSecurityToken;
-
-            if (jwtToken != null)
-            {
-                // Extract and log each claim in the token
-                foreach (var claim in jwtToken.Claims)
-                {
-                    Console.WriteLine($"Claim Type: {claim.Type}, Claim Value: {claim.Value}");
-                }
-            }
         }
     }
 }
