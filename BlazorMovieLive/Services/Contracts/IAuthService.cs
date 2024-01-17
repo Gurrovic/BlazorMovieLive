@@ -12,5 +12,6 @@ namespace BlazorMovieLive.Client.Services.Contracts
         Task<bool> UpdateUserSettings(UserSettingsModel settingsModel);
         Task<bool> AddToFavorites(FavoriteMovieDto favoriteMovieDto);
         Task<List<int>> GetFavoriteMovieIdsAsync();
+        Task<bool> RemoveFromFavorites(int id);
     }
 }

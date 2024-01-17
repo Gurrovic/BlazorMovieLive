@@ -63,6 +63,9 @@ namespace BlazorMovieLive.Client.Services
             _httpClient.DefaultRequestHeaders.Authorization = null;
         }
 
+
+
+
         public async Task<UserSettingsModel> GetUserSettings()
         {
             var response = await _httpClient.GetFromJsonAsync<UserSettingsModel>("api/accounts/getuserinfo");            
@@ -94,6 +97,12 @@ namespace BlazorMovieLive.Client.Services
                 // For simplicity, returning an empty list here
                 return new List<int>();
             }
+        }
+
+        public async Task<bool> RemoveFromFavorites(int movieId)
+        {
+            var response = await _httpClient.DeleteAsync($"api/favorites/{movieId}");
+            return response.IsSuccessStatusCode;
         }
     }
 }

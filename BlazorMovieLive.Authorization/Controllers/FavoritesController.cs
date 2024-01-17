@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 using BlazorMovieLive.Shared.Models;
 using System.Security.Claims;
 using Microsoft.EntityFrameworkCore;
+using BlazorMovieLive.Client.Pages;
 
 namespace BlazorMovieLive.Server.Controllers
 {
@@ -24,25 +25,19 @@ namespace BlazorMovieLive.Server.Controllers
             _userManager = userManager;
         }
 
+        [Authorize]
         [HttpPost]        
         public async Task<IActionResult> AddToFavorites([FromBody] FavoriteMovieDto favoriteMovieDto)
         {
-            if (User == null)
-            {
-                Console.WriteLine("User object is null");
-                return Unauthorized();
-            }
-
-            var userEmail = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Name)?.Value;
-            var user = await _userManager.FindByEmailAsync(userEmail);
-            if (user == null)
+            var userId = _userManager.GetUserId(User);
+            if (userId == null)
             {
                 return Unauthorized();
             }
 
             var favoriteMovie = new FavoriteMovie
             {
-                UserId = user.Id,
+                UserId = userId,
                 MovieId = favoriteMovieDto.MovieId,
                 MovieTitle = favoriteMovieDto.MovieTitle
             };
@@ -53,6 +48,7 @@ namespace BlazorMovieLive.Server.Controllers
             return Ok();
         }
 
+        [Authorize]
         [HttpGet]             
         public async Task<IActionResult> GetUserFavorites()
         {
@@ -68,6 +64,28 @@ namespace BlazorMovieLive.Server.Controllers
                 .ToListAsync();
 
             return Ok(favoriteMoviesIds);
+        }
+
+        [Authorize]
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteFavorite(int id)
+        {
+            var userId = _userManager.GetUserId(User); // Get the user's ID
+
+            // Find the favorite movie in the database
+            var favorite = await _context.Favorites.FirstOrDefaultAsync(f => f.UserId == userId && f.MovieId == id);
+
+            if (favorite != null)
+            {                
+                _context.Favorites.Remove(favorite);                
+                await _context.SaveChangesAsync();
+
+                return Ok(); // Return a success response
+            }
+            else
+            {
+                return NotFound(); // Favorite movie not found
+            }
         }
     }
 }

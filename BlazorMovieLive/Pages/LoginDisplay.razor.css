@@ -1,0 +1,4 @@
+﻿.wide-dropdown {
+    min-width: 250px; /* Set your desired width */
+    transform: translateX(calc(-100% + 161px)); /* Adjust this value as needed */
+}

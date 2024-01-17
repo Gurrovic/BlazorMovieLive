@@ -1,6 +1,29 @@
 ﻿@page "/movie/{id:int}"
 @inject TMDBCLient TMDB
 @inject IAuthService AuthService
+@inject NavigationManager NavigationManager
+@inject IJSRuntime JSRuntime
+
+@if (!string.IsNullOrEmpty(updateMessage))
+{
+    <div class="notification-bar">
+        @if(updateSuccess){}
+        <div class="@GetAlertClass()">
+            @updateMessage
+        </div>
+    </div>
+}
+
+<div style="margin-top: @navbarHeight}px;">
+    <style>
+        .notification-bar {
+            position: fixed;            
+            left: 0;
+            width: 100%;
+            z-index: 1000;
+        }
+    </style>
+</div>
 
 @if (movieDetails is null)
 {
@@ -32,16 +55,27 @@ else
                         <div class="movie-links">
                             <div class="d-flex justify-content-center justify-content-md-end p-3">
 
-                                <div class="text-center px-2">
-                                    <button class="btn btn-outline-success rounded-pill" @onclick="AddToFavorites">
-                                        Add to favorites
-                                    </button>
-                                </div>
+                                @if (!favoriteMoviesListIds.Any(id => id == movieDetails.Id))
+                                {
+                                    <div class="text-center px-2">
+                                        <button class="btn btn-outline-success rounded-pill" @onclick="AddToFavorites">
+                                            Add to favorites
+                                        </button>
+                                    </div>
+                                }
+                                else
+                                {
+                                    <div class="text-center px-2">
+                                        <button class="btn btn-outline-danger rounded-pill" @onclick="RemoveFromFavorites">
+                                            Remove favorite
+                                        </button>
+                                    </div>
+                                }
 
                                 @if (!string.IsNullOrEmpty(movieDetails.Homepage))
                                 {
                                     <div class="text-center px-2">
-                                        <a href="@movieDetails.Homepage" target="_blank" class="btn btn-outline-light rounded-pill">
+                                        <a href="@movieDetails.Homepage" target="_blank" class="btn btn-outline-light rounded-pill" style="font-weight: bold;">
                                             Website
                                         </a>
                                     </div>
@@ -50,11 +84,11 @@ else
                                 @if (!string.IsNullOrEmpty(movieDetails.ImdbId))
                                 {
                                     <div class="text-center px-2">
-                                        <a href="@($"https://www.imdb.com/title/{movieDetails.ImdbId}")" target="_blank" class="btn btn-outline-warning rounded-pill">
+                                        <a href="@($"https://www.imdb.com/title/{movieDetails.ImdbId}")" target="_blank" class="btn btn-outline-warning rounded-pill" style="font-weight: bold;">
                                             IMDB
                                         </a>
                                     </div>
-                                })
+                                }
                             </div>
                         </div>
 
@@ -72,7 +106,7 @@ else
                         }
                     </div>
                 </div>
-            </div>
+            </div>            
         </div>
     </div>
     <div class="container-xxl">
@@ -86,7 +120,6 @@ else
                 </div>
             }
         </div>
-
     </div>
 }
 
@@ -98,30 +131,74 @@ else
 
     private MovieDetails? movieDetails;
 
+    private List<int> favoriteMoviesListIds;    
+
+    private string updateMessage = "";
+
+    private bool updateSuccess = false;
+
+    private int navbarHeight;
+
+    private bool isOperationInProgress = false;
+
     protected override async Task OnInitializedAsync()
     {
-        movieDetails = await TMDB.GetMovieDetailsAsync(Id);        
+        favoriteMoviesListIds = await AuthService.GetFavoriteMovieIdsAsync();
+        movieDetails = await TMDB.GetMovieDetailsAsync(Id);
+        navbarHeight = await JSRuntime.InvokeAsync<int>("getNavbarHeight");        
+    }
+    
+    private string GetAlertClass()
+    {
+        return updateSuccess ? "alert alert-success" : "alert alert-danger";
     }
 
     private async Task AddToFavorites()
-    {        
-        if (movieDetails != null)
-        {
-            var favoriteMovieDto = new FavoriteMovieDto
-                {
-                    MovieId = movieDetails.Id,
-                    MovieTitle = movieDetails.Title
-                };
+    {
+        if (isOperationInProgress || movieDetails == null)
+            return;
 
-            var success = await AuthService.AddToFavorites(favoriteMovieDto);
-            if (success)
+        isOperationInProgress = true;
+
+        var favoriteMovieDto = new FavoriteMovieDto
             {
-                // Handle success (e.g., show a confirmation message)
-            }
-            else
-            {
-                // Handle failure (e.g., show an error message)
-            }
-        }
+                MovieId = movieDetails.Id,
+                MovieTitle = movieDetails.Title
+            };
+
+        var success = await AuthService.AddToFavorites(favoriteMovieDto);
+        favoriteMoviesListIds.Add(movieDetails.Id);
+        updateSuccess = success;
+        updateMessage = success
+            ? $"{movieDetails.OriginalTitle} has been added to your favorites!"
+            : "Failed to add movie to favorites";
+
+        StateHasChanged();
+        await Task.Delay(3000);
+        updateMessage = "";
+        StateHasChanged();
+
+        isOperationInProgress = false;
+    }
+    private async Task RemoveFromFavorites()
+    {
+        if (isOperationInProgress || movieDetails == null)
+            return;
+
+        isOperationInProgress = true;
+
+        var success = await AuthService.RemoveFromFavorites(movieDetails.Id);
+        favoriteMoviesListIds.Remove(movieDetails.Id);
+        updateSuccess = !success;
+        updateMessage = success
+            ? $"{movieDetails.OriginalTitle} has been removed from your favorites!"
+            : "Failed to remove movie from favorites";
+
+        StateHasChanged();
+        await Task.Delay(3000);
+        updateMessage = "";
+        StateHasChanged();
+
+        isOperationInProgress = false;
     }
 }

@@ -1,12 +1,44 @@
-﻿<AuthorizeView>
+﻿@inject IAuthService AuthService
+
+<AuthorizeView>
     <Authorized>
-        Logged in as:  @context.User.Identity!.Name   
-        <a href="Settings">Account Settings</a>
-        <a href="Favorites">Favorite Movies</a>
-        <a href="LogOut">Log out</a> 
+        <div class="dropdown">
+            <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false">
+                Account Options
+            </button>
+            <ul class="dropdown-menu wide-dropdown" aria-labelledby="dropdownMenuButton">
+                <!-- User's name (non-clickable) -->                
+                <li><span class="dropdown-item-text">@firstName @lastName</span></li>
+                <!-- Divider -->
+                <li><hr class="dropdown-divider"></li>
+                <!-- Clickable options -->
+                <li><a class="dropdown-item" href="Settings">Account Settings</a></li>
+                <li><a class="dropdown-item" href="Favorites">Favorite Movies</a></li>
+                <li><a class="dropdown-item" href="LogOut">Log out</a></li>
+            </ul>
+        </div>
     </Authorized>
     <NotAuthorized>
         <a href="Register">Register</a>
         <a href="Login">Log in</a>
     </NotAuthorized>
 </AuthorizeView>
+
+@code {    
+
+    private string firstName;
+    private string lastName;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var response = await AuthService.GetUserSettings();
+
+        if (response != null)
+        {
+            
+            firstName = response.FirstName;
+            lastName = response.LastName;
+        }
+    }
+
+}

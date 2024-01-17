@@ -42,6 +42,7 @@ namespace BlazorMovieLive.Authorization.Controllers
 
             return Ok(new RegisterResult { Successful = true });
         }
+
         [Authorize]
         [HttpGet("getuserinfo")]
         public async Task<ActionResult<UserSettingsModel>> GetUserInfo()
@@ -74,8 +75,14 @@ namespace BlazorMovieLive.Authorization.Controllers
         [HttpPost("updateuserinfo")]
         public async Task<IActionResult> UpdateUserInfo([FromBody] UserSettingsModel model)
         {
-            var userEmail = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Name)?.Value;
-            var user = await _userManager.FindByEmailAsync(userEmail);
+            var userId = _userManager.GetUserId(User);
+
+            if (string.IsNullOrEmpty(userId))
+            {
+                return NotFound();
+            }
+
+            var user = await _userManager.FindByIdAsync(userId);
 
             if (user == null)
             {

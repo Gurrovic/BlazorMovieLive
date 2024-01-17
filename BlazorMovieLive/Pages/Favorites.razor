@@ -15,15 +15,23 @@
         </h1>
     </div>
 
-    <MovieListComponent Movies="favoriteMovies?.Results"
-                        CurrentPage="favoriteMovies?.Page ?? 1"
-                        TotalPages="favoriteMovies?.TotalPages ?? 1"
-                        OnPageChanged="GetPage"/>
+
+    @if (favoriteMovies != null && favoriteMovies.Results != null && favoriteMovies.Results.Any())
+    {
+        <MovieListComponent Movies="favoriteMovies.Results"
+                            CurrentPage="favoriteMovies.Page != null ? favoriteMovies.Page : 1"
+                            TotalPages="favoriteMovies.TotalPages != null ? favoriteMovies.TotalPages : 1"
+                            OnPageChanged="GetPage" />
+    }
+    else
+    {
+        <p>No favorite movies found. You should start adding movies so you remember your favorite ones!</p>
+    }
 </div>
 
 
 @code {
-    private PopularMoviePagedResponse? favoriteMovies;
+    private PopularMoviePagedResponse? favoriteMovies;    
 
     protected override async Task OnInitializedAsync()
     {
@@ -37,7 +45,7 @@
         if (favoriteMovieIds == null || !favoriteMovieIds.Any())
         {
             // Handle the case where there are no favorite movies
-            // favoriteMovies = new List<Movie>();
+            var favoriteMovies = new List<PopularMoviePagedResponse>();
             return;
         }        
 
