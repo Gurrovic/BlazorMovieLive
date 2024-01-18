@@ -30,7 +30,12 @@ builder.Services.AddSwaggerGen();
 
 builder.Services.AddDbContext<BlazorMovieLiveDbContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-builder.Services.AddDefaultIdentity<ApplicationUser>().AddEntityFrameworkStores<BlazorMovieLiveDbContext>();
+//builder.Services.AddDefaultIdentity<ApplicationUser>().AddEntityFrameworkStores<BlazorMovieLiveDbContext>();
+
+builder.Services.AddDefaultIdentity<ApplicationUser>(options => options.SignIn.RequireConfirmedAccount = true)
+    .AddRoles<IdentityRole>() // Add role services
+    .AddEntityFrameworkStores<BlazorMovieLiveDbContext>(); // Keep using your custom DbContext
+
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         .AddJwtBearer(options =>

@@ -50,7 +50,8 @@ namespace BlazorMovieLive.Client.Services
             }
 
             await _localStorage.SetItemAsync("authToken", loginResult!.Token);
-            ((CustomAuthenticationStateProvider)_authenticationStateProvider).MarkUserAsAuthenticated(loginModel.Email!);
+            //((CustomAuthenticationStateProvider)_authenticationStateProvider).MarkUserAsAuthenticated(loginModel.Email!);
+            ((CustomAuthenticationStateProvider)_authenticationStateProvider).MarkUserAsAuthenticated(loginResult.Token);
             _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("bearer", loginResult.Token);
 
             return loginResult;
@@ -66,13 +67,13 @@ namespace BlazorMovieLive.Client.Services
 
 
 
-        public async Task<UserSettingsModel> GetUserSettings()
+        public async Task<UserSettingsModelDto> GetUserSettings()
         {
-            var response = await _httpClient.GetFromJsonAsync<UserSettingsModel>("api/accounts/getuserinfo");            
-            return response ?? new UserSettingsModel();
+            var response = await _httpClient.GetFromJsonAsync<UserSettingsModelDto>("api/accounts/getuserinfo");            
+            return response ?? new UserSettingsModelDto();
         }
 
-        public async Task<bool> UpdateUserSettings(UserSettingsModel settingsModel)
+        public async Task<bool> UpdateUserSettings(UserSettingsModelDto settingsModel)
         {
             var result = await _httpClient.PostAsJsonAsync("api/accounts/updateuserinfo", settingsModel);
             return result.IsSuccessStatusCode;

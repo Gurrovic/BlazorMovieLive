@@ -1,8 +1,8 @@
 ﻿@page "/login"
 @inject IAuthService AuthService
 @inject NavigationManager NavigationManager
+@inject CustomAuthenticationStateProvider CustomAuthenticationStateProvider
 
-<h1>Login</h1>
 
 @if (ShowErrors)
 {
@@ -11,25 +11,37 @@
     </div>
 }
 
-<div class="card">
-    <div class="card-body">
-        <h5 class="card-title">Please enter your details</h5>
-        <EditForm Model="loginModel" OnValidSubmit="HandleLogin">
-            <DataAnnotationsValidator />
-            <ValidationSummary />
+<div class="container" style="margin-top: 150px;">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="card-title">Enter your credentials to login!</h3>
+                </div>
+                <div class="card-body">
+                    <EditForm Model="loginModel" OnValidSubmit="HandleLogin">
+                        <DataAnnotationsValidator />
+                        <ValidationSummary />
 
-            <div class="form-group">
-                <label for="email">Email address</label>
-                <InputText Id="email" Class="form-control" @bind-Value="loginModel.Email" />
-                <ValidationMessage For="@(() => loginModel.Email)" />
+                        <div class="mb-3">
+                            <label for="email" class="form-label">Email Address</label>
+                            <InputText Id="email" class="form-control" @bind-Value="loginModel.Email" />
+                            <ValidationMessage For="@(() => loginModel.Email)" />
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="password" class="form-label">Password</label>
+                            <InputText Id="password" type="password" class="form-control" @bind-Value="loginModel.Password" />
+                            <ValidationMessage For="@(() => loginModel.Password)" />
+                        </div>
+
+                        <div class="text-center">
+                            <button type="submit" class="btn btn-primary">Submit</button>
+                        </div>
+                    </EditForm>
+                </div>
             </div>
-            <div class="form-group">
-                <label for="password">Password</label>
-                <InputText Id="password" type="password" Class="form-control" @bind-Value="loginModel.Password" />
-                <ValidationMessage For="@(() => loginModel.Password)" />
-            </div>
-            <button type="submit" class="btn btn-primary">Submit</button>
-        </EditForm>
+        </div>
     </div>
 </div>
 
@@ -44,9 +56,14 @@
         ShowErrors = false;
 
         var result = await AuthService.Login(loginModel);
+        Console.WriteLine("ERROR");
 
         if (result.Successful)
         {
+            // Update the authentication state with the new token
+            // CustomAuthenticationStateProvider.MarkUserAsAuthenticated(result.Token);
+
+            // Redirect to the home page
             NavigationManager.NavigateTo("/");
         }
         else

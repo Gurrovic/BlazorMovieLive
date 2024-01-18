@@ -40,12 +40,23 @@ namespace BlazorMovieLive.Authorization.Controllers
                 return Ok(new RegisterResult { Successful = false, Errors = errors });
             }
 
+            // Generate an email confirmation token
+            var token = await _userManager.GenerateEmailConfirmationTokenAsync(newUser);            
+            var test = await _userManager.ConfirmEmailAsync(newUser, token);
+            Console.WriteLine("HEJSAN");
+
+            // Create a confirmation link with the token
+            //var confirmationLink = Url.Action("ConfirmEmail", "Account", new { userId = newUser.Id, code = token }, protocol: HttpContext.Request.Scheme);
+
+            //// For testing purposes, you can display the confirmation link or log it
+            //Console.WriteLine($"Confirmation Link: {confirmationLink}");            
+
             return Ok(new RegisterResult { Successful = true });
         }
 
         [Authorize]
         [HttpGet("getuserinfo")]
-        public async Task<ActionResult<UserSettingsModel>> GetUserInfo()
+        public async Task<ActionResult<UserSettingsModelDto>> GetUserInfo()
         {
             var userId = _userManager.GetUserId(User);
             if (string.IsNullOrEmpty(userId))
@@ -61,11 +72,12 @@ namespace BlazorMovieLive.Authorization.Controllers
                 return NotFound();
             }     
 
-            var model = new UserSettingsModel
+            var model = new UserSettingsModelDto
             {
                 Email = user.Email,
                 FirstName = user.FirstName,
-                LastName = user.LastName
+                LastName = user.LastName,
+                PhoneNumber = user.PhoneNumber
             };
 
             return model;
@@ -73,7 +85,7 @@ namespace BlazorMovieLive.Authorization.Controllers
 
         [Authorize]
         [HttpPost("updateuserinfo")]
-        public async Task<IActionResult> UpdateUserInfo([FromBody] UserSettingsModel model)
+        public async Task<IActionResult> UpdateUserInfo([FromBody] UserSettingsModelDto model)
         {
             var userId = _userManager.GetUserId(User);
 
@@ -92,6 +104,7 @@ namespace BlazorMovieLive.Authorization.Controllers
             // Update user properties
             user.FirstName = model.FirstName;
             user.LastName = model.LastName;
+            user.PhoneNumber = model.PhoneNumber;
 
             // Handle the update
             var result = await _userManager.UpdateAsync(user);

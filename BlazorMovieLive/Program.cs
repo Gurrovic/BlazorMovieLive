@@ -15,6 +15,7 @@ builder.RootComponents.Add<HeadOutlet>("head::after");
 
 builder.Services.AddBlazoredLocalStorage();
 builder.Services.AddAuthorizationCore();
+builder.Services.AddScoped<CustomAuthenticationStateProvider>();
 builder.Services.AddScoped<AuthenticationStateProvider, CustomAuthenticationStateProvider>();
 builder.Services.AddScoped<AuthenticationDelegatingHandler>();
 

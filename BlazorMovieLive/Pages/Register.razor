@@ -2,7 +2,7 @@
 @inject IAuthService AuthService
 @inject NavigationManager NavigationManager
 
-<h1>REGISTER NEW ACCOUNT</h1>
+
 
 @if (ShowErrors)
 {
@@ -17,10 +17,10 @@
 @if (ShowSuccess)
 {
     <div class="alert alert-success" role="alert">
-        <p>Successfully registered a new account with name @RegisterModel.Email</p>
+        <p>Successfully registered a new account with name '@RegisterModel.Email'</p>
     </div>
 }
-
+@* 
 <div class="card">
     <div class="card-body">
         <h5 class="card-title">Please enter your details</h5>
@@ -48,12 +48,64 @@
                 <ValidationMessage For="@(() => RegisterModel.Password)" />
             </div>
             <div class="form-group">
-                <label for="password">Confirm Password</label>
-                <InputText Id="password" type="password" class="form-control" @bind-Value="RegisterModel.ConfirmPassword" />
+                <label for="confirmPassword">Confirm Password</label>
+                <InputText Id="confirmPassword" type="password" class="form-control" @bind-Value="RegisterModel.ConfirmPassword" />
                 <ValidationMessage For="@(() => RegisterModel.ConfirmPassword)" />
             </div>
             <button type="submit" class="btn btn-primary">Submit</button>
         </EditForm>
+    </div>
+</div> *@
+
+<div class="container" style="margin-top: 150px;">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="card-title">Register New Account</h3>
+                </div>
+                <div class="card-body">
+                    <EditForm Model="RegisterModel" OnValidSubmit="HandleRegistration">
+                        <DataAnnotationsValidator />
+                        <ValidationSummary />
+
+                        <div class="mb-3">
+                            <label for="email" class="form-label">Email Address</label>
+                            <InputText Id="email" class="form-control" @bind-Value="RegisterModel.Email" />
+                            <ValidationMessage For="@(() => RegisterModel.Email)" />
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="firstname" class="form-label">First Name</label>
+                            <InputText Id="firstname" class="form-control" @bind-Value="RegisterModel.FirstName" />
+                            <ValidationMessage For="@(() => RegisterModel.FirstName)" />
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="lastname" class="form-label">Last Name</label>
+                            <InputText Id="lastname" class="form-control" @bind-Value="RegisterModel.LastName" />
+                            <ValidationMessage For="@(() => RegisterModel.LastName)" />
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="password" class="form-label">Password</label>
+                            <InputText Id="password" type="password" class="form-control" @bind-Value="RegisterModel.Password" />
+                            <ValidationMessage For="@(() => RegisterModel.Password)" />
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="confirmPassword" class="form-label">Confirm Password</label>
+                            <InputText Id="confirmPassword" type="password" class="form-control" @bind-Value="RegisterModel.ConfirmPassword" />
+                            <ValidationMessage For="@(() => RegisterModel.ConfirmPassword)" />
+                        </div>
+
+                        <div class="text-center">
+                            <button type="submit" class="btn btn-primary">Submit</button>
+                        </div>
+                    </EditForm>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 

@@ -31,6 +31,11 @@ namespace BlazorMovieLive.Authorization.Controllers
         {
             // Find the user by email
             var user = await _userManager.FindByEmailAsync(login.Email);
+            var userRoles = await _userManager.GetRolesAsync(user);
+
+            //var token2 = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+            //var test = await _userManager.ConfirmEmailAsync(user, token2);
+
             if (user == null)
             {
                 return BadRequest(new LoginResult { Successful = false, Error = "Username and password are invalid." });
@@ -47,8 +52,13 @@ namespace BlazorMovieLive.Authorization.Controllers
             var claims = new List<Claim>
             {
                 new Claim(ClaimTypes.Name, login.Email),
-                new Claim(ClaimTypes.NameIdentifier, user.Id) // Add the user's ID as a claim
+                new Claim(ClaimTypes.NameIdentifier, user.Id)                
             };
+
+            foreach (var role in userRoles)
+            {
+                claims.Add(new Claim(ClaimTypes.Role, role));
+            }
 
             // Generate JWT token
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JwtSecurityKey"]));

@@ -1,4 +1,6 @@
-﻿@inject IAuthService AuthService
+﻿@using System.Security.Claims
+@inject IAuthService AuthService
+@inject AuthenticationStateProvider AuthenticationStateProvider
 
 <AuthorizeView>
     <Authorized>
@@ -14,6 +16,11 @@
                 <!-- Clickable options -->
                 <li><a class="dropdown-item" href="Settings">Account Settings</a></li>
                 <li><a class="dropdown-item" href="Favorites">Favorite Movies</a></li>
+                <AuthorizeView Roles="Admin">
+                    <Authorized Context="adminAuth">
+                        <li><a class="dropdown-item" href="AdminPage">Admin Page</a></li>
+                    </Authorized>
+                </AuthorizeView>
                 <li><a class="dropdown-item" href="LogOut">Log out</a></li>
             </ul>
         </div>
@@ -27,17 +34,22 @@
 @code {    
 
     private string firstName;
-    private string lastName;
+    private string lastName;    
 
     protected override async Task OnInitializedAsync()
     {
-        var response = await AuthService.GetUserSettings();
-
-        if (response != null)
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+        if (user.Identity?.IsAuthenticated == true)
         {
-            
-            firstName = response.FirstName;
-            lastName = response.LastName;
+            var roles = user.FindAll(ClaimTypes.Role).Select(c => c.Value).ToList();
+            Console.WriteLine("HEJ");
+            var response = await AuthService.GetUserSettings();
+            if (response != null)
+            {
+                firstName = response.FirstName;
+                lastName = response.LastName;
+            }
         }
     }
 

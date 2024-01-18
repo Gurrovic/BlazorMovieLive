@@ -55,10 +55,10 @@ namespace BlazorMovieLive.Client.Utility
 
             return jwtToken.ValidTo < DateTime.UtcNow;
         }
-
-        public void MarkUserAsAuthenticated(string email)
+        public void MarkUserAsAuthenticated(string token)
         {
-            var authenticatedUser = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim(ClaimTypes.Name, email) }, "apiauth"));
+            var claims = ParseClaimsFromJwt(token);
+            var authenticatedUser = new ClaimsPrincipal(new ClaimsIdentity(claims, "jwt"));
             var authState = Task.FromResult(new AuthenticationState(authenticatedUser));
             NotifyAuthenticationStateChanged(authState);
         }

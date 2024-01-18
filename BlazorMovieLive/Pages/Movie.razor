@@ -2,6 +2,7 @@
 @inject TMDBCLient TMDB
 @inject IAuthService AuthService
 @inject NavigationManager NavigationManager
+@inject AuthenticationStateProvider AuthenticationStateProvider
 @inject IJSRuntime JSRuntime
 
 @if (!string.IsNullOrEmpty(updateMessage))
@@ -55,21 +56,24 @@ else
                         <div class="movie-links">
                             <div class="d-flex justify-content-center justify-content-md-end p-3">
 
-                                @if (!favoriteMoviesListIds.Any(id => id == movieDetails.Id))
+                                @if (authState.User.Identity?.IsAuthenticated == true)
                                 {
-                                    <div class="text-center px-2">
-                                        <button class="btn btn-outline-success rounded-pill" @onclick="AddToFavorites">
-                                            Add to favorites
-                                        </button>
-                                    </div>
-                                }
-                                else
-                                {
-                                    <div class="text-center px-2">
-                                        <button class="btn btn-outline-danger rounded-pill" @onclick="RemoveFromFavorites">
-                                            Remove favorite
-                                        </button>
-                                    </div>
+                                    @if (!favoriteMoviesListIds.Any(id => id == movieDetails.Id))
+                                    {
+                                        <div class="text-center px-2">
+                                            <button class="btn btn-outline-success rounded-pill" @onclick="AddToFavorites">
+                                                Add to favorites
+                                            </button>
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <div class="text-center px-2">
+                                            <button class="btn btn-outline-danger rounded-pill" @onclick="RemoveFromFavorites">
+                                                Remove favorite
+                                            </button>
+                                        </div>
+                                    }
                                 }
 
                                 @if (!string.IsNullOrEmpty(movieDetails.Homepage))
@@ -141,11 +145,18 @@ else
 
     private bool isOperationInProgress = false;
 
+    private AuthenticationState authState;
+
     protected override async Task OnInitializedAsync()
     {
-        favoriteMoviesListIds = await AuthService.GetFavoriteMovieIdsAsync();
         movieDetails = await TMDB.GetMovieDetailsAsync(Id);
-        navbarHeight = await JSRuntime.InvokeAsync<int>("getNavbarHeight");        
+
+        authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        if (authState.User.Identity?.IsAuthenticated == true)
+        {
+            favoriteMoviesListIds = await AuthService.GetFavoriteMovieIdsAsync();
+            navbarHeight = await JSRuntime.InvokeAsync<int>("getNavbarHeight");
+        }
     }
     
     private string GetAlertClass()
